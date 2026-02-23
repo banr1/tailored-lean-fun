@@ -2,7 +2,7 @@ import LeanFun.Definitions
 
 open abelian
 
-def theorem6
+theorem theorem6
   (M : Finset (FreeAbelianMonoid 1)) :
   ∃ C₁ C₂ : ℝ,
     0 < C₁ ∧ 0 < C₂ ∧
