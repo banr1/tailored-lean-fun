@@ -10,5 +10,5 @@ theorem theorem_2_quasi_exponential_expansion
   (∀ (r : ℕ), (M ∩ (Ball r (A n))).ncard ≤ c * (Real.rpow (Real.log ((Real.exp 1) + r)) q)) →
     (∃ (K : ℕ), ∀ (s : ℕ), (s ≥ 2) → ((K > 0) ∧
       let r := 1 + Int.toNat <| Int.floor <| Real.exp (K * s * (Real.log s))
-      ¬ (Ball r (A n) ⊆ Ball s (M ∪ (A n))))) :=
+      ¬ (Ball r (A n) ⊆ Ball s (M ∪ (A n))))) := by
     sorry
