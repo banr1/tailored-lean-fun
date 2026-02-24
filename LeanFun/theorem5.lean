@@ -17,6 +17,6 @@ theorem theorem5
     (∀ (s : ℕ), (s ≥ 1) →
       let rs := Real.rpow s ((b : ℝ) / (b - 1))
       (Ball (Int.toNat <| Int.ceil <| C₁ * rs) (A 1) ⊆ Ball s (M ∪ (A 1))) ∧
-        ¬ (Ball (Int.toNat <| Int.floor <| C₂ * rs)) (A 1) ⊆ Ball s (M ∪ (A 1)))
+        ¬ (Ball (1 + Int.toNat <| Int.floor <| C₂ * rs)) (A 1) ⊆ Ball s (M ∪ (A 1)))
     ) :=
   sorry
