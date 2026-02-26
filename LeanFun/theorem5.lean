@@ -31,6 +31,7 @@ theorem theorem5_upper_bound (b : ℕ) (hb : 2 ≤ b) :
     sorry
 
 theorem theorem5_upper_bound_neg (b : ℕ) (hb : 2 ≤ b) :
+  let M := DoublyMacroSet b
   ¬ (∃ C₂ B : ℝ,
       0 < C₂ ∧
       (∀ (s : ℕ), (s ≥ B) →
