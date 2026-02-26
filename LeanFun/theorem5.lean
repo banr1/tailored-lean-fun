@@ -31,7 +31,7 @@ theorem theorem5_upper_bound (b : ℕ) (hb : 2 ≤ b) :
     sorry
 
 theorem theorem5_upper_bound_neg (b : ℕ) (hb : 2 ≤ b) :
-  (∃ C₂ B : ℝ,
+  ¬ (∃ C₂ B : ℝ,
       0 < C₂ ∧
       (∀ (s : ℕ), (s ≥ B) →
       let rs := Real.rpow s ((b : ℝ) / (b - 1))
