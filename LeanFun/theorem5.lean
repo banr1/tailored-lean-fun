@@ -58,7 +58,7 @@ theorem theorem5_ball_mono_R {n : ℕ} {R R' : ℕ} {X : Set (FreeMonoid (Fin n)
   rcases hm with ⟨l, hlR, hlX, hlprod⟩
   refine ⟨l, ?_, hlX, hlprod⟩
   exact le_trans hlR h
-  
+
 
 theorem theorem5_ball_mono_X {n : ℕ} {R : ℕ} {X Y : Set (FreeMonoid (Fin n))} (h : X ⊆ Y) : Ball R X ⊆ Ball R Y := by
   intro m hm
@@ -1124,7 +1124,7 @@ theorem theorem5_ncard_randomSet_inter_sphere_eq_sum_indicator (n : ℕ) (hn : 2
             simpa [hto]
     _ = ∑ w ∈ W, (if ω w = true then (1 : ℝ) else 0) := by
             simpa using (Finset.natCast_card_filter (R := ℝ) (s := W) (p := fun w => ω w = true))
-    
+
 
 open scoped BigOperators in
 open Filter in
@@ -1753,7 +1753,7 @@ theorem theorem5_hasPeriod_subword_of_eq {n : ℕ} {w : FreeMonoid (Fin n)} {i d
   · -- drop equality
     have hlen_minus : (theorem5_subword (n := n) w i (ℓ + d)).length - d = ℓ := by
       -- (ℓ + d) - d = ℓ
-      simpa [hlen_subword, Nat.add_sub_cancel] 
+      simpa [hlen_subword, Nat.add_sub_cancel]
     -- rewrite RHS length-d
     rw [hlen_minus]
     -- now unfold theorem5_subword
@@ -1785,7 +1785,7 @@ theorem theorem5_hasPeriod_subword_of_eq {n : ℕ} {w : FreeMonoid (Fin n)} {i d
             simpa [theorem5_subword] using congrArg id heq.symm
       _ = ((w.drop i).take (ℓ + d)).take ℓ := by
             simpa [htake] using (Eq.symm htake)
-    
+
 
 
 open free in
@@ -2660,7 +2660,7 @@ theorem theorem5_random_density_eventually_le_two_mul_mean (n : ℕ) (hn : 2 ≤
   have hAE_not_freq : ∀ᵐ ω ∂μ, ¬ (∃ᶠ r in atTop, bad r ω) := by
     -- convert measure zero set
     simpa [Filter.Frequently, μ] using (MeasureTheory.ae_iff.2 hfreq0)
-  
+
   -- Now show eventually inequality
   filter_upwards [hAE_not_freq] with ω hnot
   have hev : (∀ᶠ r : ℕ in atTop, ¬ bad r ω) := by
@@ -2981,23 +2981,23 @@ theorem theorem5_simplification (n : ℕ) (hn : 2 ≤ n) :
 
 
 
--- theorem theorem5
---     (n : ℕ) (hn : 2 ≤ n) :
---     ∃ M : Set (FreeMonoid (Fin n)),
---       Tendsto
---         (fun r : ℕ =>
---           ((Set.ncard (M ∩ Sphere n r) : ℝ) / (Set.ncard (Sphere n r) : ℝ)))
---         atTop (nhds 0)
---       ∧
---       Tendsto
---         (fun s : ℕ =>
---           ((expansion (A n) (M ∪ (A n)) s : ℝ) / (s : ℝ)))
---         atTop atTop
---       ∧
---       ∃ (K : ℕ) (c : ℝ), 0 < K ∧ 0 < c ∧
---         (∀ᶠ r : ℕ in atTop,
---           Ball r (A n) ⊆ Ball (K * (Nat.log2 r) ^ 2) (M ∪ (A n)))
---         ∧
---        (∀ᶠ s : ℕ in atTop,
---          (Real.exp (c * Real.sqrt (s : ℝ)) ≤ (expansion (A n) (M ∪ (A n)) s : ℝ))) := by
---  sorry
+theorem theorem5
+    (n : ℕ) (hn : 2 ≤ n) :
+    ∃ M : Set (FreeMonoid (Fin n)),
+      Tendsto
+        (fun r : ℕ =>
+          ((Set.ncard (M ∩ Sphere n r) : ℝ) / (Set.ncard (Sphere n r) : ℝ)))
+        atTop (nhds 0)
+      ∧
+      Tendsto
+        (fun s : ℕ =>
+          ((expansion (A n) (M ∪ (A n)) s : ℝ) / (s : ℝ)))
+        atTop atTop
+      ∧
+      ∃ (K : ℕ) (c : ℝ), 0 < K ∧ 0 < c ∧
+        (∀ᶠ r : ℕ in atTop,
+          Ball r (A n) ⊆ Ball (K * (Nat.log2 r) ^ 2) (M ∪ (A n)))
+        ∧
+       (∀ᶠ s : ℕ in atTop,
+         (Real.exp (c * Real.sqrt (s : ℝ)) ≤ (expansion (A n) (M ∪ (A n)) s : ℝ))) := by
+ sorry
