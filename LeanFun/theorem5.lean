@@ -2979,7 +2979,26 @@ theorem theorem5_simplification (n : ℕ) (hn : 2 ≤ n) :
   refine ⟨hMdens, ?_⟩
   exact ⟨K, hKpos, hBall⟩
 
+theorem theorem5_help1
+    (n : ℕ) (hn : 2 ≤ n) (M : Set (FreeMonoid (Fin n))) :
+     ∃ (K : ℕ), 0 < K ∧
+        (∀ᶠ r : ℕ in atTop,
+          Ball r (A n) ⊆ Ball (K * (Nat.log2 r) ^ 2) (M ∪ (A n))) →
+      Tendsto
+        (fun s : ℕ =>
+          ((expansion (A n) (M ∪ (A n)) s : ℝ) / (s : ℝ)))
+        atTop atTop := by
+  sorry
 
+theorem theorem5_help2
+    (n : ℕ) (hn : 2 ≤ n) (M : Set (FreeMonoid (Fin n))) :
+     ∃ (K : ℕ), 0 < K ∧
+        (∀ᶠ r : ℕ in atTop,
+          Ball r (A n) ⊆ Ball (K * (Nat.log2 r) ^ 2) (M ∪ (A n))) →
+      ∃ (c : ℝ), 0 < c ∧
+      (∀ᶠ s : ℕ in atTop,
+         (Real.exp (c * Real.sqrt (s : ℝ)) ≤ (expansion (A n) (M ∪ (A n)) s))) := by
+  sorry
 
 theorem theorem5
     (n : ℕ) (hn : 2 ≤ n) :
@@ -2999,5 +3018,5 @@ theorem theorem5
           Ball r (A n) ⊆ Ball (K * (Nat.log2 r) ^ 2) (M ∪ (A n)))
         ∧
        (∀ᶠ s : ℕ in atTop,
-         (Real.exp (c * Real.sqrt (s : ℝ)) ≤ (expansion (A n) (M ∪ (A n)) s : ℝ))) := by
+         (Real.exp (c * Real.sqrt (s : ℝ)) ≤ (expansion (A n) (M ∪ (A n)) s))) := by
  sorry
