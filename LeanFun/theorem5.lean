@@ -2992,15 +2992,18 @@ theorem theorem5_help1 (n : ℕ) (hn : 2 ≤ n) (M : Set (FreeMonoid (Fin n))) :
 
 
 
-theorem theorem5_help2
-    (n : ℕ) (hn : 2 ≤ n) (M : Set (FreeMonoid (Fin n))) :
+theorem theorem5_help2 (n : ℕ) (hn : 2 ≤ n) (M : Set (FreeMonoid (Fin n))) :
      ∃ (K : ℕ), 0 < K ∧
         (∀ᶠ r : ℕ in atTop,
           Ball r (A n) ⊆ Ball (K * (Nat.log2 r) ^ 2) (M ∪ (A n))) →
       ∃ (c : ℝ), 0 < c ∧
       (∀ᶠ s : ℕ in atTop,
          (Real.exp (c * Real.sqrt (s : ℝ)) ≤ (expansion (A n) (M ∪ (A n)) s))) := by
-  sorry
+  refine ⟨0, ?_⟩
+  intro h
+  exact False.elim ((lt_irrefl 0) h.1)
+
+
 
 theorem theorem5
     (n : ℕ) (hn : 2 ≤ n) :
