@@ -2986,48 +2986,6 @@ theorem theorem5_simplification (n : ℕ) (hn : 2 ≤ n) :
   refine ⟨hMdens, ?_⟩
   exact ⟨K, hKpos, hBall⟩
 
--- theorem theorem5_help1
---     (n : ℕ) (hn : 2 ≤ n) (M : Set (FreeMonoid (Fin n))) (K : ℕ) :
---     0 < K ∧
---         (∀ᶠ r : ℕ in atTop,
---           Ball r (A n) ⊆ Ball (K * (Nat.log2 r) ^ 2) (M ∪ (A n))) →
---       Tendsto
---         (fun s : ℕ =>
---           ((expansion (A n) (M ∪ (A n)) s : ℝ) / (s : ℝ)))
---         atTop atTop := by
---   sorry
-
--- theorem theorem5_help2
---     (n : ℕ) (hn : 2 ≤ n) (M : Set (FreeMonoid (Fin n))) (K : ℕ) :
---      0 < K ∧
---         (∀ᶠ r : ℕ in atTop,
---           Ball r (A n) ⊆ Ball (K * (Nat.log2 r) ^ 2) (M ∪ (A n))) →
---       ∃ (c : ℝ), 0 < c ∧
---       (∀ᶠ s : ℕ in atTop,
---          (Real.exp (c * Real.sqrt (s : ℝ)) ≤ (expansion (A n) (M ∪ (A n)) s))) := by
---   sorry
-
--- theorem theorem5
---     (n : ℕ) (hn : 2 ≤ n) :
---     ∃ M : Set (FreeMonoid (Fin n)),
---       Tendsto
---         (fun r : ℕ =>
---           ((Set.ncard (M ∩ Sphere n r) : ℝ) / (Set.ncard (Sphere n r) : ℝ)))
---         atTop (nhds 0)
---       ∧
---       Tendsto
---         (fun s : ℕ =>
---           ((expansion (A n) (M ∪ (A n)) s : ℝ) / (s : ℝ)))
---         atTop atTop
---       ∧
---       ∃ (K : ℕ) (c : ℝ), 0 < K ∧ 0 < c ∧
---         (∀ᶠ r : ℕ in atTop,
---           Ball r (A n) ⊆ Ball (K * (Nat.log2 r) ^ 2) (M ∪ (A n)))
---         ∧
---        (∀ᶠ s : ℕ in atTop,
---          (Real.exp (c * Real.sqrt (s : ℝ)) ≤ (expansion (A n) (M ∪ (A n)) s))) := by
---   sorry
-
 theorem theorem5_cdivlog2_sq_eq_inv16K (K : ℕ) (hK : 0 < K) :
   ((Real.log 2 / (4 * Real.sqrt (K : ℝ))) / Real.log 2) ^ 2 =
     (1 : ℝ) / (16 * (K : ℝ)) := by
@@ -3415,3 +3373,23 @@ theorem theorem5_alternative (n : ℕ) (hn : 2 ≤ n) :
   refine ⟨M, hMdens, hExp, ?_⟩
   refine ⟨K, c, hKpos, hcpos, hBall, hBallExp⟩
 
+theorem theorem5
+    (n : ℕ) (hn : 2 ≤ n) :
+    ∃ M : Set (FreeMonoid (Fin n)),
+      Tendsto
+        (fun r : ℕ =>
+          ((Set.ncard (M ∩ Sphere n r) : ℝ) / (Set.ncard (Sphere n r) : ℝ)))
+        atTop (nhds 0)
+      ∧
+      Tendsto
+        (fun s : ℕ =>
+          (expansionENNReal (A n) (M ∪ (A n)) s) / (s : ENNReal))
+        atTop (nhds (⊤ : ENNReal))
+      ∧
+      ∃ (K : ℕ) (c : ℝ), 0 < K ∧ 0 < c ∧
+        (∀ᶠ r : ℕ in atTop,
+          Ball r (A n) ⊆ Ball (K * (Nat.log2 r) ^ 2) (M ∪ (A n)))
+        ∧
+       (∀ᶠ s : ℕ in atTop,
+         (ENNReal.ofReal (Real.exp (c * Real.sqrt (s : ℝ))) ≤ expansionENNReal (A n) (M ∪ (A n)) s)) := by
+  sorry
