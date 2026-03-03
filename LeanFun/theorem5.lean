@@ -2980,8 +2980,8 @@ theorem theorem5_simplification (n : ℕ) (hn : 2 ≤ n) :
   exact ⟨K, hKpos, hBall⟩
 
 -- theorem theorem5_help1
---     (n : ℕ) (hn : 2 ≤ n) (M : Set (FreeMonoid (Fin n))) :
---      ∃ (K : ℕ), 0 < K ∧
+--     (n : ℕ) (hn : 2 ≤ n) (M : Set (FreeMonoid (Fin n))) (K : ℕ) :
+--     0 < K ∧
 --         (∀ᶠ r : ℕ in atTop,
 --           Ball r (A n) ⊆ Ball (K * (Nat.log2 r) ^ 2) (M ∪ (A n))) →
 --       Tendsto
@@ -2991,8 +2991,8 @@ theorem theorem5_simplification (n : ℕ) (hn : 2 ≤ n) :
 --   sorry
 
 -- theorem theorem5_help2
---     (n : ℕ) (hn : 2 ≤ n) (M : Set (FreeMonoid (Fin n))) :
---      ∃ (K : ℕ), 0 < K ∧
+--     (n : ℕ) (hn : 2 ≤ n) (M : Set (FreeMonoid (Fin n))) (K : ℕ) :
+--      0 < K ∧
 --         (∀ᶠ r : ℕ in atTop,
 --           Ball r (A n) ⊆ Ball (K * (Nat.log2 r) ^ 2) (M ∪ (A n))) →
 --       ∃ (c : ℝ), 0 < c ∧
@@ -3000,26 +3000,26 @@ theorem theorem5_simplification (n : ℕ) (hn : 2 ≤ n) :
 --          (Real.exp (c * Real.sqrt (s : ℝ)) ≤ (expansion (A n) (M ∪ (A n)) s))) := by
 --   sorry
 
-theorem theorem5
-    (n : ℕ) (hn : 2 ≤ n) :
-    ∃ M : Set (FreeMonoid (Fin n)),
-      Tendsto
-        (fun r : ℕ =>
-          ((Set.ncard (M ∩ Sphere n r) : ℝ) / (Set.ncard (Sphere n r) : ℝ)))
-        atTop (nhds 0)
-      ∧
-      Tendsto
-        (fun s : ℕ =>
-          ((expansion (A n) (M ∪ (A n)) s : ℝ) / (s : ℝ)))
-        atTop atTop
-      ∧
-      ∃ (K : ℕ) (c : ℝ), 0 < K ∧ 0 < c ∧
-        (∀ᶠ r : ℕ in atTop,
-          Ball r (A n) ⊆ Ball (K * (Nat.log2 r) ^ 2) (M ∪ (A n)))
-        ∧
-       (∀ᶠ s : ℕ in atTop,
-         (Real.exp (c * Real.sqrt (s : ℝ)) ≤ (expansion (A n) (M ∪ (A n)) s))) := by
-  sorry
+-- theorem theorem5
+--     (n : ℕ) (hn : 2 ≤ n) :
+--     ∃ M : Set (FreeMonoid (Fin n)),
+--       Tendsto
+--         (fun r : ℕ =>
+--           ((Set.ncard (M ∩ Sphere n r) : ℝ) / (Set.ncard (Sphere n r) : ℝ)))
+--         atTop (nhds 0)
+--       ∧
+--       Tendsto
+--         (fun s : ℕ =>
+--           ((expansion (A n) (M ∪ (A n)) s : ℝ) / (s : ℝ)))
+--         atTop atTop
+--       ∧
+--       ∃ (K : ℕ) (c : ℝ), 0 < K ∧ 0 < c ∧
+--         (∀ᶠ r : ℕ in atTop,
+--           Ball r (A n) ⊆ Ball (K * (Nat.log2 r) ^ 2) (M ∪ (A n)))
+--         ∧
+--        (∀ᶠ s : ℕ in atTop,
+--          (Real.exp (c * Real.sqrt (s : ℝ)) ≤ (expansion (A n) (M ∪ (A n)) s))) := by
+--   sorry
 
 theorem theorem5_alternative
     (n : ℕ) (hn : 2 ≤ n) :
