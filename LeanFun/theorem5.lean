@@ -3028,8 +3028,369 @@ theorem theorem5_simplification (n : ℕ) (hn : 2 ≤ n) :
 --          (Real.exp (c * Real.sqrt (s : ℝ)) ≤ (expansion (A n) (M ∪ (A n)) s))) := by
 --   sorry
 
-theorem theorem5_alternative
-    (n : ℕ) (hn : 2 ≤ n) :
+theorem theorem5_cdivlog2_sq_eq_inv16K (K : ℕ) (hK : 0 < K) :
+  ((Real.log 2 / (4 * Real.sqrt (K : ℝ))) / Real.log 2) ^ 2 =
+    (1 : ℝ) / (16 * (K : ℝ)) := by
+  have hlog2 : (Real.log 2 : ℝ) ≠ 0 := by
+    have hpos : (0 : ℝ) < Real.log 2 := by
+      have h12 : (1 : ℝ) < 2 := by
+        norm_num
+      simpa using (Real.log_pos h12)
+    exact ne_of_gt hpos
+  have hK0 : (K : ℝ) ≠ 0 := by
+    exact_mod_cast (Nat.ne_of_gt hK)
+  have hKnn : (0 : ℝ) ≤ (K : ℝ) := by
+    positivity
+  have hcancel : Real.log 2 / (4 * Real.sqrt (K : ℝ)) / Real.log 2 = (1 : ℝ) / (4 * Real.sqrt (K : ℝ)) := by
+    field_simp [hlog2]
+  -- cancel the logs
+  rw [hcancel]
+  -- expand the square and simplify
+  simp [pow_two, one_div, mul_assoc, mul_left_comm, mul_comm]
+  field_simp [hK0]
+  -- use sqrt^2 = K
+  rw [Real.sq_sqrt hKnn]
+  -- numeric simplification
+  norm_num
+  -- remaining goal is commutativity
+  simp [mul_comm, mul_left_comm, mul_assoc]
+
+theorem theorem5_real_simp_mul_K_expr (K s : ℕ) (hK : (K : ℝ) ≠ 0) :
+  (K : ℝ) * (2 + 2 * ((K : ℝ)⁻¹ * (16 : ℝ)⁻¹ * (s : ℝ))) =
+    2 * (K : ℝ) + (s : ℝ) / 8 := by
+  field_simp [hK]
+  ring
+
+theorem theorem5_sq_one_add_le_two (y : ℝ) : (1 + y) ^ 2 ≤ 2 + 2 * y ^ 2 := by
+  have hsq : 0 ≤ (y - 1) ^ 2 := by
+    simpa [pow_two] using (mul_self_nonneg (y - 1))
+  have hrew : 2 + 2 * y ^ 2 - (1 + y) ^ 2 = (y - 1) ^ 2 := by
+    ring
+  have hdiff : 0 ≤ 2 + 2 * y ^ 2 - (1 + y) ^ 2 := by
+    simpa [hrew] using hsq
+  -- Convert from nonnegativity of the difference to the desired inequality
+  exact (sub_nonneg).1 hdiff
+
+theorem theorem5_eventually_K_log2_ceiling_exp_sqrt_sq_le (K : ℕ) :
+  0 < K →
+    ∃ c : ℝ, 0 < c ∧
+      (∀ᶠ s : ℕ in atTop,
+        K * (Nat.log2 (Int.toNat <| Int.ceil <| Real.exp (c * Real.sqrt (s : ℝ)))) ^ 2 ≤ s) := by
+  intro hK
+  classical
+  set c : ℝ := Real.log 2 / (4 * Real.sqrt (K : ℝ))
+  have hcpos : 0 < c := by
+    have hlog2 : 0 < Real.log 2 := by
+      have : (1 : ℝ) < 2 := by norm_num
+      simpa using Real.log_pos this
+    have hK' : (0 : ℝ) < (K : ℝ) := by
+      exact_mod_cast hK
+    have hsqrt : 0 < Real.sqrt (K : ℝ) := by
+      simpa using Real.sqrt_pos.2 hK'
+    have hden : 0 < (4 * Real.sqrt (K : ℝ)) := by
+      have : (0 : ℝ) < (4 : ℝ) := by norm_num
+      exact mul_pos this hsqrt
+    have : 0 < Real.log 2 / (4 * Real.sqrt (K : ℝ)) := div_pos hlog2 hden
+    simpa [c] using this
+  refine ⟨c, hcpos, ?_⟩
+  refine Filter.eventually_atTop.2 ?_
+  refine ⟨16 * K, ?_⟩
+  intro s hs
+  set x : ℝ := Real.exp (c * Real.sqrt (s : ℝ))
+  set r : ℕ := ⌈x⌉₊
+  have hxpos : 0 < x := by
+    simpa [x] using (Real.exp_pos (c * Real.sqrt (s : ℝ)))
+  have hx0 : 0 ≤ x := le_of_lt hxpos
+  have hr_lt : (r : ℝ) < x + 1 := by
+    simpa [r] using (Nat.ceil_lt_add_one (R := ℝ) (a := x) hx0)
+  have hxarg_nonneg : 0 ≤ c * Real.sqrt (s : ℝ) := by
+    have : 0 ≤ Real.sqrt (s : ℝ) := by
+      exact Real.sqrt_nonneg _
+    exact mul_nonneg (le_of_lt hcpos) this
+  have hx1 : 1 ≤ x := by
+    have := Real.one_le_exp hxarg_nonneg
+    simpa [x] using this
+  have hx_add_one_le : x + 1 ≤ 2 * x := by
+    nlinarith [hx1]
+  have hr_le_two_mul : (r : ℝ) ≤ 2 * x := by
+    have hr_le : (r : ℝ) ≤ x + 1 := le_of_lt hr_lt
+    exact le_trans hr_le hx_add_one_le
+  have hr_posR : (0 : ℝ) < (r : ℝ) := by
+    have hr1 : (1 : ℕ) ≤ r := by
+      have : (1 : ℕ) ≤ ⌈x⌉₊ := (Nat.one_le_ceil_iff).2 hxpos
+      simpa [r] using this
+    have hr1R : (1 : ℝ) ≤ (r : ℝ) := by
+      exact_mod_cast hr1
+    linarith
+  have hb : (1 : ℝ) < 2 := by norm_num
+  have hlogb_mono : Real.logb 2 (r : ℝ) ≤ Real.logb 2 (2 * x) := by
+    exact Real.logb_le_logb_of_le (b := (2 : ℝ)) hb hr_posR hr_le_two_mul
+  have hlog2_le : (Nat.log2 r : ℝ) ≤ Real.logb 2 (r : ℝ) := by
+    simpa using (Real.log2_le_logb r)
+  have hx_ne : x ≠ 0 := ne_of_gt hxpos
+  have hlogb_simp : Real.logb 2 (2 * x) = 1 + (c / Real.log 2) * Real.sqrt (s : ℝ) := by
+    have h2 : (2 : ℝ) ≠ 0 := by norm_num
+    calc
+      Real.logb 2 (2 * x) = Real.logb 2 2 + Real.logb 2 x := by
+        simpa using (Real.logb_mul (b := (2 : ℝ)) (x := (2 : ℝ)) (y := x) h2 hx_ne)
+      _ = 1 + Real.logb 2 x := by
+        simp [Real.logb_self_eq_one (by norm_num : (1 : ℝ) < (2 : ℝ))]
+      _ = 1 + (c * Real.sqrt (s : ℝ)) / Real.log 2 := by
+        have : Real.logb 2 x = Real.log x / Real.log 2 := by
+          simpa using (Real.log_div_log (x := x) (b := (2 : ℝ))).symm
+        simp [this, x]
+      _ = 1 + (c / Real.log 2) * Real.sqrt (s : ℝ) := by
+        ring
+  have hlog_bound : (Nat.log2 r : ℝ) ≤ 1 + (c / Real.log 2) * Real.sqrt (s : ℝ) := by
+    exact le_trans hlog2_le (le_trans hlogb_mono (le_of_eq hlogb_simp))
+  -- square bounds
+  set y : ℝ := (c / Real.log 2) * Real.sqrt (s : ℝ)
+  have hsq1 : (Nat.log2 r : ℝ) ^ 2 ≤ (1 + y) ^ 2 := by
+    have ha : 0 ≤ (Nat.log2 r : ℝ) := by
+      exact_mod_cast (Nat.zero_le (Nat.log2 r))
+    have hb' : 0 ≤ (1 + y) := by
+      have hy_nonneg : 0 ≤ y := by
+        have hlog2pos : 0 < Real.log 2 := by
+          have : (1 : ℝ) < 2 := by norm_num
+          simpa using Real.log_pos this
+        have hc_over : 0 ≤ c / Real.log 2 := by
+          exact div_nonneg (le_of_lt hcpos) (le_of_lt hlog2pos)
+        have hsqrt0 : 0 ≤ Real.sqrt (s : ℝ) := by
+          exact Real.sqrt_nonneg _
+        simpa [y] using mul_nonneg hc_over hsqrt0
+      linarith
+    have hab : (Nat.log2 r : ℝ) ≤ 1 + y := by
+      simpa [y] using hlog_bound
+    exact (sq_le_sq₀ ha hb').2 hab
+  have hsq2 : (1 + y) ^ 2 ≤ 2 + 2 * y ^ 2 := by
+    simpa using (theorem5_sq_one_add_le_two y)
+  have hsq : (Nat.log2 r : ℝ) ^ 2 ≤ 2 + 2 * y ^ 2 := le_trans hsq1 hsq2
+  have hsqrt_sq : (Real.sqrt (s : ℝ)) ^ 2 = (s : ℝ) := by
+    have : 0 ≤ (s : ℝ) := by positivity
+    simpa using Real.sq_sqrt this
+  have hy_sq : y ^ 2 = (c / Real.log 2) ^ 2 * (s : ℝ) := by
+    calc
+      y ^ 2 = (c / Real.log 2) ^ 2 * (Real.sqrt (s : ℝ)) ^ 2 := by
+        simp [y, mul_pow]
+      _ = (c / Real.log 2) ^ 2 * (s : ℝ) := by
+        simp [hsqrt_sq]
+  have hsq' : (Nat.log2 r : ℝ) ^ 2 ≤ 2 + 2 * ((c / Real.log 2) ^ 2 * (s : ℝ)) := by
+    simpa [hy_sq] using hsq
+  have hc_sq : (c / Real.log 2) ^ 2 = (1 : ℝ) / (16 * (K : ℝ)) := by
+    simpa [c] using theorem5_cdivlog2_sq_eq_inv16K K hK
+  have hsq'' : (Nat.log2 r : ℝ) ^ 2 ≤ 2 + 2 * (((K : ℝ)⁻¹ * (16 : ℝ)⁻¹) * (s : ℝ)) := by
+    -- rewrite coefficient into inverse form
+    have : (1 : ℝ) / (16 * (K : ℝ)) = (K : ℝ)⁻¹ * (16 : ℝ)⁻¹ := by
+      field_simp [show (K : ℝ) ≠ 0 by
+        have : (K : ℕ) ≠ 0 := Nat.ne_of_gt hK
+        exact_mod_cast this]
+    simpa [hc_sq, this, mul_assoc, mul_left_comm, mul_comm] using hsq'
+  have hKnonneg : 0 ≤ (K : ℝ) := by positivity
+  have hmul : (K : ℝ) * ((Nat.log2 r : ℝ) ^ 2) ≤
+      (K : ℝ) * (2 + 2 * ((K : ℝ)⁻¹ * (16 : ℝ)⁻¹ * (s : ℝ))) := by
+    have hsq''' : (Nat.log2 r : ℝ) ^ 2 ≤ 2 + 2 * ((K : ℝ)⁻¹ * (16 : ℝ)⁻¹ * (s : ℝ)) := by
+      simpa [mul_assoc] using hsq''
+    exact mul_le_mul_of_nonneg_left hsq''' hKnonneg
+  have hKne : (K : ℝ) ≠ 0 := by
+    have : (K : ℕ) ≠ 0 := Nat.ne_of_gt hK
+    exact_mod_cast this
+  have hRHS' := theorem5_real_simp_mul_K_expr K s hKne
+  have hmul' : (K : ℝ) * ((Nat.log2 r : ℝ) ^ 2) ≤ 2 * (K : ℝ) + (s : ℝ) / 8 := by
+    simpa [hRHS'] using hmul
+  have hbudget : 2 * (K : ℝ) + (s : ℝ) / 8 ≤ (s : ℝ) := by
+    have hsR : (16 * (K : ℝ)) ≤ (s : ℝ) := by
+      exact_mod_cast hs
+    have hs_nonneg : 0 ≤ (s : ℝ) := by positivity
+    nlinarith [hsR, hs_nonneg]
+  have hreal_final : (K : ℝ) * ((Nat.log2 r : ℝ) ^ 2) ≤ (s : ℝ) := le_trans hmul' hbudget
+  have hnat : K * (Nat.log2 r) ^ 2 ≤ s := by
+    exact_mod_cast hreal_final
+  simpa [r, x, Int.ceil_toNat] using hnat
+
+theorem theorem5_tendsto_ceiling_exp_sqrt_atTop (c : ℝ) (hc : 0 < c) :
+  Tendsto
+    (fun s : ℕ => (Int.toNat <| Int.ceil <| Real.exp (c * Real.sqrt (s : ℝ))))
+    atTop atTop := by
+  -- attempt
+  have hnat : Tendsto (fun s : ℕ => (s : ℝ)) atTop atTop := by
+    simpa using (tendsto_natCast_atTop_atTop : Tendsto ((↑) : ℕ → ℝ) atTop atTop)
+  have hsqrt : Tendsto (fun s : ℕ => Real.sqrt (s : ℝ)) atTop atTop := by
+    have hy : (0 : ℝ) < (1 / (2 : ℝ)) := by
+      norm_num
+    -- use sqrt = rpow
+    have : Tendsto (fun s : ℕ => (s : ℝ) ^ (1 / (2 : ℝ))) atTop atTop :=
+      (tendsto_rpow_atTop (y := (1 / (2 : ℝ))) hy).comp hnat
+    simpa [Real.sqrt_eq_rpow] using this
+  have hmul : Tendsto (fun s : ℕ => c * Real.sqrt (s : ℝ)) atTop atTop := by
+    -- constant mul preserves atTop
+    simpa [mul_comm, mul_left_comm, mul_assoc] using (Filter.Tendsto.const_mul_atTop hc hsqrt)
+  have hexp : Tendsto (fun s : ℕ => Real.exp (c * Real.sqrt (s : ℝ))) atTop atTop := by
+    -- exp tends to atTop
+    exact Real.tendsto_exp_atTop.comp hmul
+  -- now apply nat ceil
+  -- rewrite Int.toNat (Int.ceil x) as Nat.ceil x
+  -- and use tendsto_nat_ceil_atTop
+  have hceil : Tendsto (fun s : ℕ => (Nat.ceil (Real.exp (c * Real.sqrt (s : ℝ))))) atTop atTop :=
+    (tendsto_nat_ceil_atTop.comp hexp)
+  -- final simp
+  simpa [Nat.ceil] using hceil
+
+theorem theorem5_ball_exp_inclusion (n : ℕ) (M : Set (FreeMonoid (Fin n))) (K : ℕ) :
+    0 < K ∧
+        (∀ᶠ r : ℕ in atTop,
+          Ball r (A n) ⊆ Ball (K * (Nat.log2 r) ^ 2) (M ∪ (A n))) →
+      ∃ (c : ℝ), 0 < c ∧
+        (∀ᶠ s : ℕ in atTop,
+          (Ball (Int.toNat <| Int.ceil <| Real.exp (c * Real.sqrt (s : ℝ))) (A n)
+            ⊆ Ball s (M ∪ (A n)))) := by
+  intro h
+  rcases h with ⟨hKpos, hBall⟩
+  rcases theorem5_eventually_K_log2_ceiling_exp_sqrt_sq_le K hKpos with ⟨c, hcpos, hineq⟩
+  refine ⟨c, hcpos, ?_⟩
+  let r : ℕ → ℕ := fun s => (Int.toNat <| Int.ceil <| Real.exp (c * Real.sqrt (s : ℝ)))
+  have hr_tendsto : Tendsto r atTop atTop := by
+    simpa [r] using theorem5_tendsto_ceiling_exp_sqrt_atTop c hcpos
+  have hBall_pull : (∀ᶠ s : ℕ in atTop,
+      Ball (r s) (A n) ⊆ Ball (K * (Nat.log2 (r s)) ^ 2) (M ∪ (A n))) := by
+    exact hr_tendsto.eventually hBall
+  have hineq' : (∀ᶠ s : ℕ in atTop, K * (Nat.log2 (r s)) ^ 2 ≤ s) := by
+    simpa [r] using hineq
+  filter_upwards [hBall_pull, hineq'] with s hsBall hsle
+  have hmono : Ball (K * (Nat.log2 (r s)) ^ 2) (M ∪ (A n)) ⊆ Ball s (M ∪ (A n)) := by
+    exact theorem5_ball_mono_R hsle
+  exact Set.Subset.trans hsBall hmono
+
+theorem theorem5_help (n : ℕ) (hn : 2 ≤ n) (M : Set (FreeMonoid (Fin n))) (K : ℕ) :
+  0 < K ∧
+      (∀ᶠ r : ℕ in atTop,
+        Ball r (A n) ⊆ Ball (K * (Nat.log2 r) ^ 2) (M ∪ (A n))) →
+    Tendsto
+      (fun s : ℕ =>
+        (expansionENNReal (A n) (M ∪ (A n)) s) / (s : ENNReal))
+      atTop (nhds (⊤ : ENNReal)) := by
+  intro h
+  rcases h with ⟨hKpos, hBall⟩
+  rcases theorem5_ball_exp_inclusion n M K ⟨hKpos, hBall⟩ with ⟨c, hcpos, hExpBall⟩
+
+  -- Exponential radius coming from `theorem5_ball_exp_inclusion`.
+  let rNat : ℕ → ℕ := fun s => Nat.ceil (Real.exp (c * Real.sqrt (s : ℝ)))
+
+  have hInc : ∀ᶠ s : ℕ in atTop, Ball (rNat s) (A n) ⊆ Ball s (M ∪ (A n)) := by
+    -- rewrite the axiom's `Int.toNat ∘ Int.ceil` as `Nat.ceil`
+    simpa [rNat, Int.ceil_toNat] using hExpBall
+
+  -- `rNat s` satisfies the defining property of `expansion`, so it is below it.
+  have hle_expansion : ∀ᶠ s : ℕ in atTop, (rNat s : WithTop ℕ) ≤ expansion (A n) (M ∪ (A n)) s := by
+    filter_upwards [hInc] with s hs
+    unfold expansion
+    refine le_sSup ?_
+    exact ⟨rNat s, hs, rfl⟩
+
+  have hle_expansionENN : ∀ᶠ s : ℕ in atTop, (rNat s : ENNReal) ≤ expansionENNReal (A n) (M ∪ (A n)) s := by
+    filter_upwards [hle_expansion] with s hs
+    classical
+    cases hE : expansion (A n) (M ∪ (A n)) s with
+    | top =>
+        simp [expansionENNReal, hE]
+    | coe t =>
+        have hs' : (rNat s : WithTop ℕ) ≤ (t : WithTop ℕ) := by
+          simpa [hE] using hs
+        have hnat : rNat s ≤ t := by
+          simpa using (show (rNat s : WithTop ℕ) ≤ (t : WithTop ℕ) from hs')
+        simpa [expansionENNReal, hE] using (show (rNat s : ENNReal) ≤ (t : ENNReal) from by
+          exact_mod_cast hnat)
+
+  have hle_ratio : ∀ᶠ s : ℕ in atTop,
+      (rNat s : ENNReal) / (s : ENNReal) ≤ expansionENNReal (A n) (M ∪ (A n)) s / (s : ENNReal) := by
+    filter_upwards [hle_expansionENN] with s hs
+    simpa using (ENNReal.div_le_div_right hs (s : ENNReal))
+
+  -- Divergence criterion for `ENNReal`.
+  refine ENNReal.tendsto_nhds_top ?_
+  intro N
+
+  have hgrowth : ∀ᶠ s : ℕ in atTop, (N + 1 : ENNReal) ≤ (rNat s : ENNReal) / (s : ENNReal) := by
+    -- First show `exp(c*sqrt s) / s → ∞` in `ℝ`.
+    have hfun : Tendsto (fun x : ℝ => Real.exp (c * x) / x ^ (2 : ℝ)) atTop atTop :=
+      tendsto_exp_mul_div_rpow_atTop (s := (2 : ℝ)) (b := c) hcpos
+
+    have hsqrt : Tendsto (fun s : ℕ => Real.sqrt (s : ℝ)) atTop atTop := by
+      have hcast : Tendsto (fun s : ℕ => (s : ℝ)) atTop atTop := by
+        simpa using (tendsto_natCast_atTop_atTop (R := ℝ))
+      have hrpow : Tendsto (fun x : ℝ => x ^ (1 / (2 : ℝ))) atTop atTop := by
+        have : (0 : ℝ) < (1 / (2 : ℝ)) := by
+          norm_num
+        simpa using (tendsto_rpow_atTop this)
+      simpa [Real.sqrt_eq_rpow] using (hrpow.comp hcast)
+
+    have hreal_tendsto : Tendsto (fun s : ℕ => Real.exp (c * Real.sqrt (s : ℝ)) / (s : ℝ)) atTop atTop := by
+      have hcomp : Tendsto (fun s : ℕ => Real.exp (c * Real.sqrt (s : ℝ)) / (Real.sqrt (s : ℝ)) ^ (2 : ℝ)) atTop atTop :=
+        (hfun.comp hsqrt)
+      have hnonneg : ∀ s : ℕ, (0 : ℝ) ≤ (s : ℝ) := by
+        intro s
+        positivity
+      have hEq : (fun s : ℕ => Real.exp (c * Real.sqrt (s : ℝ)) / (Real.sqrt (s : ℝ)) ^ (2 : ℝ)) =
+          (fun s : ℕ => Real.exp (c * Real.sqrt (s : ℝ)) / (s : ℝ)) := by
+        funext s
+        have hsq_nat : (Real.sqrt (s : ℝ)) ^ (2 : ℕ) = (s : ℝ) := by
+          simpa using (Real.sq_sqrt (hnonneg s))
+        have hsq : (Real.sqrt (s : ℝ)) ^ (2 : ℝ) = (s : ℝ) := by
+          -- convert nat power to rpow
+          simpa [Real.rpow_natCast] using hsq_nat
+        simp [hsq]
+      simpa [hEq] using hcomp
+
+    have hreal_event : ∀ᶠ s : ℕ in atTop,
+        (N + 1 : ℝ) ≤ Real.exp (c * Real.sqrt (s : ℝ)) / (s : ℝ) :=
+      (Filter.tendsto_atTop.1 hreal_tendsto) (N + 1 : ℝ)
+
+    have hspos : ∀ᶠ s : ℕ in atTop, (0 : ℝ) < (s : ℝ) := by
+      refine (Filter.eventually_atTop.2 ?_)
+      refine ⟨1, ?_⟩
+      intro s hs
+      have hs0 : 0 < s := lt_of_lt_of_le (Nat.succ_pos 0) hs
+      exact_mod_cast hs0
+
+    filter_upwards [hreal_event, hspos] with s hs hspos
+
+    have hmul_real : (N + 1 : ℝ) * (s : ℝ) ≤ Real.exp (c * Real.sqrt (s : ℝ)) := by
+      have := (le_div_iff₀ hspos).1 hs
+      simpa [mul_assoc, mul_left_comm, mul_comm] using this
+
+    have hexp_le : Real.exp (c * Real.sqrt (s : ℝ)) ≤ (rNat s : ℝ) := by
+      simpa [rNat] using (Nat.le_ceil (Real.exp (c * Real.sqrt (s : ℝ))))
+
+    have hmul_real' : (N + 1 : ℝ) * (s : ℝ) ≤ (rNat s : ℝ) := le_trans hmul_real hexp_le
+
+    have hnat : (N + 1) * s ≤ rNat s := by
+      exact_mod_cast hmul_real'
+
+    have hmulENN : (N + 1 : ENNReal) * (s : ENNReal) ≤ (rNat s : ENNReal) := by
+      exact_mod_cast hnat
+
+    have hsENN_ne0 : (s : ENNReal) ≠ 0 := by
+      have hsNat0 : 0 < s := by
+        exact_mod_cast hspos
+      have hsNat_ne0 : s ≠ 0 := Nat.ne_of_gt hsNat0
+      exact_mod_cast hsNat_ne0
+
+    have h0 : (s : ENNReal) ≠ 0 ∨ (rNat s : ENNReal) ≠ 0 := Or.inl hsENN_ne0
+    have ht : (s : ENNReal) ≠ (⊤ : ENNReal) ∨ (rNat s : ENNReal) ≠ (⊤ : ENNReal) := by
+      exact Or.inl (by simp)
+
+    have : (N + 1 : ENNReal) ≤ (rNat s : ENNReal) / (s : ENNReal) := by
+      exact (ENNReal.le_div_iff_mul_le h0 ht).2 hmulENN
+    simpa using this
+
+  have hNlt : (N : ENNReal) < (N + 1 : ENNReal) := by
+    exact_mod_cast (Nat.lt_succ_self N)
+
+  filter_upwards [hgrowth, hle_ratio] with s hsGrow hsLe
+  have hN' : (N : ENNReal) < (rNat s : ENNReal) / (s : ENNReal) :=
+    lt_of_lt_of_le hNlt hsGrow
+  exact lt_of_lt_of_le hN' hsLe
+
+theorem theorem5_alternative (n : ℕ) (hn : 2 ≤ n) :
     ∃ M : Set (FreeMonoid (Fin n)),
       Tendsto
         (fun r : ℕ =>
@@ -3038,13 +3399,19 @@ theorem theorem5_alternative
       ∧
       Tendsto
         (fun s : ℕ =>
-          ((expansionENNReal (A n) (M ∪ (A n)) s) / (s : ℝ≥0∞)))
-        atTop atTop
+          (expansionENNReal (A n) (M ∪ (A n)) s) / (s : ENNReal))
+        atTop (nhds (⊤ : ENNReal))
       ∧
       ∃ (K : ℕ) (c : ℝ), 0 < K ∧ 0 < c ∧
         (∀ᶠ r : ℕ in atTop,
           Ball r (A n) ⊆ Ball (K * (Nat.log2 r) ^ 2) (M ∪ (A n)))
         ∧
        (∀ᶠ s : ℕ in atTop,
-          (Ball (Int.toNat <| Int.ceil <| Real.exp (c * Real.sqrt (s : ℝ))) (A n) ⊆ (Ball s (M ∪ (A n))))) := by
-  sorry
+          Ball (Int.toNat <| Int.ceil <| Real.exp (c * Real.sqrt (s : ℝ))) (A n) ⊆ Ball s (M ∪ (A n))) := by
+  classical
+  rcases theorem5_simplification n hn with ⟨M, hMdens, ⟨K, hKpos, hBall⟩⟩
+  have hExp := theorem5_help n hn M K ⟨hKpos, hBall⟩
+  rcases theorem5_ball_exp_inclusion n M K ⟨hKpos, hBall⟩ with ⟨c, hcpos, hBallExp⟩
+  refine ⟨M, hMdens, hExp, ?_⟩
+  refine ⟨K, c, hKpos, hcpos, hBall, hBallExp⟩
+
