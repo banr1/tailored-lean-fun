@@ -3373,8 +3373,56 @@ theorem theorem5_alternative (n : ℕ) (hn : 2 ≤ n) :
   refine ⟨M, hMdens, hExp, ?_⟩
   refine ⟨K, c, hKpos, hcpos, hBall, hBallExp⟩
 
-theorem theorem5
-    (n : ℕ) (hn : 2 ≤ n) :
+theorem theorem5_from_alternative_eventually_exp_le_expansion (n : ℕ) (M : Set (FreeMonoid (Fin n))) (c : ℝ)
+  (hBallExp : (∀ᶠ s : ℕ in atTop,
+    Ball (Int.toNat <| Int.ceil <| Real.exp (c * Real.sqrt (s : ℝ))) (A n)
+      ⊆ Ball s (M ∪ (A n)))) :
+  (∀ᶠ s : ℕ in atTop,
+    ENNReal.ofReal (Real.exp (c * Real.sqrt (s : ℝ)))
+      ≤ expansionENNReal (A n) (M ∪ (A n)) s) := by
+  classical
+  -- Define the natural radius coming from the exponential term.
+  let rNat : ℕ → ℕ := fun s => Nat.ceil (Real.exp (c * Real.sqrt (s : ℝ)))
+
+  -- Rewrite the hypothesis in terms of `Nat.ceil`.
+  have hInc : (∀ᶠ s : ℕ in atTop, Ball (rNat s) (A n) ⊆ Ball s (M ∪ (A n))) := by
+    simpa [rNat, Int.ceil_toNat] using hBallExp
+
+  -- `rNat s` is admissible in the definition of `expansion`.
+  have hle_expansion :
+      (∀ᶠ s : ℕ in atTop, (rNat s : WithTop ℕ) ≤ expansion (A n) (M ∪ (A n)) s) := by
+    filter_upwards [hInc] with s hs
+    unfold expansion
+    refine le_sSup ?_
+    exact ⟨rNat s, hs, rfl⟩
+
+  -- Convert the `WithTop ℕ` inequality to `ENNReal`.
+  have hle_expansionENN :
+      (∀ᶠ s : ℕ in atTop, (rNat s : ENNReal) ≤ expansionENNReal (A n) (M ∪ (A n)) s) := by
+    filter_upwards [hle_expansion] with s hs
+    cases hE : expansion (A n) (M ∪ (A n)) s with
+    | top =>
+        simp [expansionENNReal, hE]
+    | coe t =>
+        have hs' : (rNat s : WithTop ℕ) ≤ (t : WithTop ℕ) := by
+          simpa [hE] using hs
+        have hnat : rNat s ≤ t := by
+          simpa using (show (rNat s : WithTop ℕ) ≤ (t : WithTop ℕ) from hs')
+        have hENN : (rNat s : ENNReal) ≤ (t : ENNReal) := by
+          exact_mod_cast hnat
+        simpa [expansionENNReal, hE] using hENN
+
+  -- Finally compare `exp` with its ceiling and chain inequalities.
+  filter_upwards [hle_expansionENN] with s hs
+  have hexp_le : Real.exp (c * Real.sqrt (s : ℝ)) ≤ (rNat s : ℝ) := by
+    simpa [rNat] using (Nat.le_ceil (Real.exp (c * Real.sqrt (s : ℝ))))
+  have hofReal_le :
+      ENNReal.ofReal (Real.exp (c * Real.sqrt (s : ℝ))) ≤ (rNat s : ENNReal) := by
+    simpa using (show ENNReal.ofReal (Real.exp (c * Real.sqrt (s : ℝ))) ≤
+        ENNReal.ofReal (rNat s : ℝ) from ENNReal.ofReal_le_ofReal hexp_le)
+  exact le_trans hofReal_le hs
+
+theorem theorem5 (n : ℕ) (hn : 2 ≤ n) :
     ∃ M : Set (FreeMonoid (Fin n)),
       Tendsto
         (fun r : ℕ =>
@@ -3392,4 +3440,10 @@ theorem theorem5
         ∧
        (∀ᶠ s : ℕ in atTop,
          (ENNReal.ofReal (Real.exp (c * Real.sqrt (s : ℝ))) ≤ expansionENNReal (A n) (M ∪ (A n)) s)) := by
-  sorry
+  classical
+  rcases theorem5_alternative n hn with ⟨M, hdens, hT, ⟨K, c, hKpos, hcpos, hBall, hBallExp⟩⟩
+  refine ⟨M, hdens, hT, ?_⟩
+  refine ⟨K, c, hKpos, hcpos, hBall, ?_⟩
+  exact theorem5_from_alternative_eventually_exp_le_expansion n M c hBallExp
+
+
