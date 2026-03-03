@@ -2,6 +2,7 @@ import LeanFun.Definitions
 
 
 open scoped BigOperators
+open scoped ENNReal
 open Filter
 
 open free
@@ -9,8 +10,14 @@ open free
 def Sphere (n r : ℕ) : Set (FreeMonoid (Fin n)) :=
   {w | w.length = r}
 
-noncomputable def expansion {n : ℕ} (G G' : Set (FreeMonoid (Fin n))) (s : ℕ) : ℕ :=
-    sSup { r : ℕ | Ball r G ⊆ Ball s G' }
+noncomputable def expansion {n : ℕ} (G G' : Set (FreeMonoid (Fin n))) (s : ℕ) : WithTop ℕ :=
+    sSup ((fun r : ℕ => (r : WithTop ℕ)) '' { r : ℕ | Ball r G ⊆ Ball s G' })
+
+noncomputable def expansionENNReal {n : ℕ}
+    (G G' : Set (FreeMonoid (Fin n))) (s : ℕ) : ℝ≥0∞ :=
+    match expansion (n := n) G G' s with
+    | ⊤     => (∞ : ℝ≥0∞)
+    | (r : ℕ) => (r : ℝ≥0∞)
 
 theorem theorem5_ball_A_iff_length_le (n R : ℕ) (w : FreeMonoid (Fin n)) : w ∈ Ball R (A n) ↔ w.length ≤ R := by
   -- unfold Ball and A
@@ -3031,7 +3038,7 @@ theorem theorem5_alternative
       ∧
       Tendsto
         (fun s : ℕ =>
-          ((expansion (A n) (M ∪ (A n)) s : ℝ) / (s : ℝ)))
+          ((expansionENNReal (A n) (M ∪ (A n)) s) / (s : ℝ≥0∞)))
         atTop atTop
       ∧
       ∃ (K : ℕ) (c : ℝ), 0 < K ∧ 0 < c ∧
